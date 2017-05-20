@@ -1,26 +1,53 @@
 from Record import Record
+from HitStructure import HitStructure
+from datetime import datetime
+import time
 class AttackDetector(object):
 	#def __init__(self):
-	
+	def calculateTimeDifference(self,lastHitTime,currentTime):
+		desiredFormatForDifference = '%H:%M:%S'
+		difference = datetime.strptime(currentTime,desiredFormatForDifference) - datetime.strptime(lastHitTime, desiredFormatForDifference)
+		difference = difference.seconds*1000
+		return difference
+
 	def loadInput(self):
 		dataFile=open("/u/aritde/dosDetector/apache-access-log.txt",'r')
-		count=0
+		recordList = []
 		for line in dataFile:
-			count=count+1
-			r = self.splitFields(line)
-			#print("Record is : "+ r.getIpAddress() +"Time:"+ r.gettimeStamp())
-			ipAddress = r.getIpAddress()
+			record = self.splitFields(line)
+			recordList.append(record)
+		self.fraudDetection(recordList)
+		
+	def fraudDetection(self,recordList):
+		#print("Record is : "+ r.getIpAddress() +"Time:"+ r.gettimeStamp())
+		mapOfRecords = {}
+		suspiciousIPs = set()
+		for record in recordList:
+			ipAddress = record.getIpAddress()
 			print("Currently processing :"+ ipAddress)
-			currentTime=r.gettimeStamp()
+			currentTime=record.gettimeStamp()
 			if ipAddress in mapOfRecords:
-				lastHitTime = mapOfRecords[ipAdress].gettimeStamp()
-				desiredFormatForDifference = '%H:%M:%S'
-				difference = datetime.strptime(currentTime,desiredFormatForDifference) - datetime.strptime(lastHitTime, desiredFormatForDifference)
-				difference = difference.seconds*1000
-				
-				
-				
-
+				lastHitTime = mapOfRecords[ipAddress].gettimeStamp()
+				difference = self.calculateTimeDifference(lastHitTime,currentTime)
+				#print("Difference :"+ str(difference))
+				diffSeconds = int(difference/1000%60)
+				diffMinutes = int(difference/(60*1000)%60)
+				diffHours = int(difference/(60*60*1000))
+				#print(str(diffSeconds) +" "+str(diffMinutes)+" "+str(diffHours))
+				if diffHours == 0 and diffMinutes<1:	
+					updateCount = mapOfRecords[ipAddress].getCount();
+					h=HitStructure(lastHitTime,updateCount+1)
+					mapOfRecords[ipAddress]=h
+					if updateCount+1>=89:
+						if ipAddress not in suspiciousIPs:
+							suspiciousIPs.add(ipAddress)
+			else:
+				h = HitStructure(currentTime,1)
+				mapOfRecords[ipAddress]=h
+		print("Suspicious IPs : "+str(len(suspiciousIPs)))
+		self.writeOutput(suspiciousIPs)
+		
+	
 	
 	def splitFields(self,line):
 		fields = line.split(" ")
