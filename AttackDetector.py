@@ -2,24 +2,31 @@ from Record import Record
 from HitStructure import HitStructure
 from datetime import datetime
 import time
+import os
 class AttackDetector(object):
 	#def __init__(self):
+	#Function to calculate the time difference
 	def calculateTimeDifference(self,lastHitTime,currentTime):
 		desiredFormatForDifference = '%H:%M:%S'
 		difference = datetime.strptime(currentTime,desiredFormatForDifference) - datetime.strptime(lastHitTime, desiredFormatForDifference)
 		difference = difference.seconds*1000
 		return difference
 
+	#Loads the inputfile onto a list and passes onto the fraudDetection function
 	def loadInput(self):
 		dataFile=open("/u/aritde/dosDetector/apache-access-log.txt",'r')
 		recordList = []
 		for line in dataFile:
+			#sends each line of the file to the split function in order to populate the Record data structure from the required fields of the record in the actual file
 			record = self.splitFields(line)
 			recordList.append(record)
+		#sends the data onto the main function for detecting the suspicious IP's
 		self.fraudDetection(recordList)
-		
+	
+	#Main function responsible for detecting the suspicious IPs	
 	def fraudDetection(self,recordList):
 		#print("Record is : "+ r.getIpAddress() +"Time:"+ r.gettimeStamp())
+		
 		mapOfRecords = {}
 		suspiciousIPs = set()
 		for record in recordList:
@@ -46,9 +53,19 @@ class AttackDetector(object):
 				mapOfRecords[ipAddress]=h
 		print("Suspicious IPs : "+str(len(suspiciousIPs)))
 		self.writeOutput(suspiciousIPs)
+
+	def writeOutput(self,suspiciousIPs):
+		outputFile=os.path.expanduser('~') + '/dosDetector/suspicious.txt'
+		try:
+    			os.remove(outputFile)
+		except OSError:
+    			pass
+		fileHandler = open(outputFile,'a')
+		#outputFile=open("suspicious.txt","w+")
+		for ip in suspiciousIPs:
+			fileHandler.write(ip+"\n")
+		fileHandler.close()
 		
-	
-	
 	def splitFields(self,line):
 		fields = line.split(" ")
 		timestamp=fields[3].split(":",1)[1].split(" ", 1)[0]
