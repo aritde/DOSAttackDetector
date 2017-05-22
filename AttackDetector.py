@@ -13,15 +13,20 @@ class AttackDetector(object):
 		return difference
 
 	#Loads the inputfile onto a list and passes onto the fraudDetection function
-	def loadInput(self):
-		dataFile=open("/u/aritde/dosDetector/apache-access-log.txt",'r')
+	def loadInput(self,filename):
+		dataFile=open(filename,'r')
 		recordList = []
+		setOfSuspiciousIPs=set()
 		for line in dataFile:
 			#sends each line of the file to the split function in order to populate the Record data structure from the required fields of the record in the actual file
 			record = self.splitFields(line)
 			recordList.append(record)
 		#sends the data onto the main function for detecting the suspicious IP's
-		self.fraudDetection(recordList)
+		countOfSuspiciousIPs,setOfSuspiciousIPs=self.fraudDetection(recordList)
+		#Redirects the output to an output file
+		self.writeOutput(setOfSuspiciousIPs)
+		dataFile.close()
+		return countOfSuspiciousIPs
 	
 	#Main function responsible for detecting the suspicious IPs	
 	def fraudDetection(self,recordList):
@@ -42,7 +47,7 @@ class AttackDetector(object):
 		"""
 		for record in recordList:
 			ipAddress = record.getIpAddress()
-			print("Currently processing :"+ ipAddress)
+			#print("Currently processing :"+ ipAddress)
 			currentTime=record.gettimeStamp()
 			#Implements step 2. of the above algorithm
 			if ipAddress in mapOfRecords:
@@ -59,7 +64,7 @@ class AttackDetector(object):
 					h=HitStructure(lastHitTime,updateCount+1)
 					mapOfRecords[ipAddress]=h
 					#Implements step 3 of the above algortihm
-					if updateCount+1>=85:
+					if updateCount+1>=87:
 						if ipAddress not in suspiciousIPs:
 							suspiciousIPs.add(ipAddress)
 				#Implements step 2b. of the above algortihm 
@@ -69,10 +74,7 @@ class AttackDetector(object):
 			else:
 				h = HitStructure(currentTime,1)
 				mapOfRecords[ipAddress]=h
-		#Displays the suspicious IP count on the console
-		print("Suspicious IPs : "+str(len(suspiciousIPs)))
-		#Redirects the output to an output file
-		self.writeOutput(suspiciousIPs)
+		return len(suspiciousIPs),suspiciousIPs
 	
 	#Function to check if output file exists from the previous run. If yes, overwrites the output file with the new output
 	def writeOutput(self,suspiciousIPs):
@@ -97,7 +99,10 @@ class AttackDetector(object):
 def main():
 	#Creates an instance of the above class
 	attackDetector = AttackDetector()
-	attackDetector.loadInput()
+	filename = "/u/aritde/dosDetector/apache-access-log.txt"
+	result = attackDetector.loadInput(filename)
+	#Displays the suspicious IP count on the console
+	print("Suspicious IPs : "+str(result))
 
 if __name__== "__main__":
 	main()
