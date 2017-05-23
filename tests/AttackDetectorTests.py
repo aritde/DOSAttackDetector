@@ -1,3 +1,5 @@
+import sys
+sys.path.insert(0, '../src/')
 from AttackDetector import AttackDetector
 from Record import Record
 import unittest
@@ -7,7 +9,13 @@ class AttackDetectorTests(unittest.TestCase):
 	def setUp(self):
 		self.inputData = os.path.join(os.path.dirname(__file__), 'testData.txt')
 		self.outputPath = os.path.join(os.path.dirname(__file__),'testSuspicious.txt')
-
+	
+	def tearDown(self):
+        	try:
+           		 os.remove(self.outputPath)
+        	except OSError as oserr:
+            		print(oserr)
+	
 	def test_loadInput(self):
 		obj = AttackDetector()
 		self.assertEqual(len(obj.loadInput(self.inputData)),803)
@@ -25,7 +33,7 @@ class AttackDetectorTests(unittest.TestCase):
 	def test_writeOutput(self):
 		obj = AttackDetector()
 		recordList = obj.loadInput(self.inputData)
-		outputData = "/dosDetector/testSuspicious.txt"
+		outputData = "/dosDetector/DD/DOSAttackDetector/tests/testSuspicious.txt"
 		setOfSuspiciousIPs=obj.fraudDetection(recordList,87)
 		result = set()
 		obj.writeOutput(setOfSuspiciousIPs,outputData)
@@ -34,15 +42,7 @@ class AttackDetectorTests(unittest.TestCase):
 			result.add(line[:-1])
 		self.assertEqual(result,setOfSuspiciousIPs)
 		contents.close()
-	"""		 				
-	def test_calculateTimeDifference1(self):
-		obj = AttackDetector()
-		self.assertRaises(TypeError,obj.calculateTimeDifference(230315,'23:07:15'))
 	
-	def test_calculateTimeDifference2(self):
-                obj = AttackDetector()
-                self.assertRaises(TypeError,obj.calculateTimeDifference('23:03:15',230715))
-	"""
 	def test_calculateTimeDifference3(self):
 		obj = AttackDetector()
 		self.assertEqual(obj.calculateTimeDifference('23:03:15','23:07:15'),240000)
