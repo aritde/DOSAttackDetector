@@ -11,8 +11,8 @@ class HitStructure:
 	def getCount(self):
 		return self.count
 	#Setter Methods
-	def settimeStamp(self,timeStamp)
+	def settimeStamp(this,timeStamp):
 		self.timeStamp = timeStamp
-	def setCount(self,count)
+	def setCount(this,count):
 		self.count=count
 
