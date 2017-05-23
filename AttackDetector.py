@@ -10,20 +10,30 @@ class AttackDetector(object):
 	
 	#Function to calculate the time difference
 	def calculateTimeDifference(self,lastHitTime,currentTime):
-		desiredFormatForDifference = '%H:%M:%S'
-		difference = datetime.strptime(currentTime,desiredFormatForDifference) - datetime.strptime(lastHitTime, desiredFormatForDifference)
-		difference = difference.seconds*1000
+		difference = 0
+		try:
+			desiredFormatForDifference = '%H:%M:%S'
+			difference = datetime.strptime(currentTime,desiredFormatForDifference) - datetime.strptime(lastHitTime, desiredFormatForDifference)
+			difference = difference.seconds*1000
+		except TypeError:
+			print("parameter in calculateTimeDifference is in incorrect Format")
+			raise
 		return difference
 
 	#Loads the inputfile onto a list and passes onto the fraudDetection function
 	def loadInput(self,inputFile):
-		dataFile = open(inputFile,'r')
 		recordList = []
-		for line in dataFile:
-			#sends each line of the file to the split function in order to populate the Record data structure from the required fields of the record in the actual file
-			record = self.splitFields(line)
-			recordList.append(record)
-		dataFile.close()
+		try:
+			dataFile = open(inputFile,'r')
+			#recordList = []
+			for line in dataFile:
+				#sends each line of the file to the split function in order to populate the Record data structure from the required fields of the record in the actual file
+				record = self.splitFields(line)
+				recordList.append(record)
+			dataFile.close()
+		except FileNotFoundError:
+			print("Input File Not Found")
+			raise
 		return recordList
 	
 	#Main function responsible for detecting the suspicious IPs	
@@ -32,7 +42,9 @@ class AttackDetector(object):
 		
 		mapOfRecords = {} # responsible for maintaining the count of seen IP's in the current 2minute window
 		suspiciousIPs = set() # responsible for mainitaining the suspicious IPs
+		
 		#The below function implements the idea:
+		
 		"""
 			1.If IP not in map, add a new entry into the map with the following data:
 				Key : IP
@@ -43,6 +55,7 @@ class AttackDetector(object):
 			3.If the count exceeds the threshold, add it to the set of suspicious IPs
 				
 		"""
+		
 		for record in recordList:
 			ipAddress = record.getIpAddress()
 			#print("Currently processing :"+ ipAddress)
@@ -55,7 +68,6 @@ class AttackDetector(object):
 				diffSeconds = int(difference/1000%60)
 				diffMinutes = int(difference/(60*1000)%60)
 				diffHours = int(difference/(60*60*1000))
-				#print(str(diffSeconds) +" "+str(diffMinutes)+" "+str(diffHours))
 				#Implements step 2a. of the above algortihm
 				if diffHours == 0 and diffMinutes == 0 and diffSeconds <=30:	
 					updateCount = mapOfRecords[ipAddress].getCount();
@@ -74,7 +86,7 @@ class AttackDetector(object):
 				mapOfRecords[ipAddress]=h
 		return suspiciousIPs
 	
-	#Function to check if output file exists from the previous run. If yes, overwrites the output file with the new output
+	#Function to check if output file exists from the previous run. If yes, it is deleted and re-created with the new output
 	def writeOutput(self,suspiciousIPs,outputFile):
 		outputFile=os.path.expanduser('~') + outputFile
 		try:
@@ -95,22 +107,25 @@ class AttackDetector(object):
 		return r
 #Main function
 def main():
-	#Creates an instance of the above class
-	attackDetector = AttackDetector()
-	recordList = []
-	inputFile = sys.argv[1]
-	outputFile = sys.argv[2]
-	threshold = int(sys.argv[3])
-	#inputFile = "/u/aritde/dosDetector/apache-access-log.txt"
-	#outputFile ="/dosDetector/suspicious.txt"
-	#Loads the input from the log file
-	recordList = attackDetector.loadInput(inputFile)
-	#sends the data onto the main function for detecting the suspicious IP's
-	setOfSuspiciousIPs=attackDetector.fraudDetection(recordList,threshold)
-	#Redirects the output to an output file
-	attackDetector.writeOutput(setOfSuspiciousIPs,outputFile)
-	#Displays the suspicious IP count on the console
-	print("Suspicious IPs : "+str(len(setOfSuspiciousIPs)))
+	try:
+		#Creates an instance of the above class
+		attackDetector = AttackDetector()
+		recordList = []
+		inputFile = sys.argv[1]
+		outputFile = sys.argv[2]
+		threshold = int(sys.argv[3])
+		#inputFile = "/u/aritde/dosDetector/apache-access-log.txt"
+		#outputFile ="/dosDetector/suspicious.txt"
+		#Loads the input from the log file
+		recordList = attackDetector.loadInput(inputFile)
+		#sends the data onto the main function for detecting the suspicious IP's
+		setOfSuspiciousIPs=attackDetector.fraudDetection(recordList,threshold)
+		#Redirects the output to an output file
+		attackDetector.writeOutput(setOfSuspiciousIPs,outputFile)
+		#Displays the suspicious IP count on the console
+		print("Suspicious IPs : "+str(len(setOfSuspiciousIPs)))
+	except :
+		print("Handle appropriate Error")
 
 if __name__== "__main__":
 	main()
