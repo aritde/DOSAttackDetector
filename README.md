@@ -3,7 +3,7 @@ This project detects the suspicious IP's in the DOS Attack within 2 minutes afte
 
 **EXECUTION**
 
-python3 AttackDetector.py <input-file-path> <output-file-directory> <threshold>
+python3 AttackDetector.py [input-file-path] [output-file-directory] [threshold]
 
 Example :
 python3 AttackDetector.py /u/username/dosDetector/src/apache-access-log.txt /dosDetector/suspicious.txt 87
