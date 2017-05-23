@@ -11,15 +11,18 @@ pip install unittest
 
 **EXECUTION**
 
+Download the supplied input file in the path /DOSAttackDetector
+
 Go to /src
 
 python3 AttackDetector.py [input-file-path] [output-file-directory] [threshold]
 
 Example :
-python3 AttackDetector.py /u/username/DosAttackDetector/src/apache-access-log.txt /DosAttackDetector/suspicious.txt 87
+python3 AttackDetector.py /u/username/DOSAttackDetector/src/apache-access-log.txt /DOSAttackDetector/suspicious.txt 87
 
 Expected Output :
-Count of suspicious IPs : 567
+Count of suspicious IPs : 567 (on console)
+Set of suspicious IPs in the suspicious.txt file in /DOSAttackDetector
 
 Note: For meaningful results based on the data, a range of good threshold is : 85 - 89
 
