@@ -1,5 +1,5 @@
 # DOSAttackDetector
-This project detects the suspicious IP's in the DOS Attack within 2 minutes after the attack.
+This project detects the suspicious IP's in a DOS Attack within 2 minutes after the attack.
 
 **Packages Required**
 
