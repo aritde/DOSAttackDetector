@@ -1,6 +1,13 @@
 # DOSAttackDetector
 This project detects the suspicious IP's in the DOS Attack within 2 minutes after the attack.
 
+**Packages Required**
+unittest
+
+_Installation :_
+
+pip install unittest
+
 **EXECUTION**
 
 python3 AttackDetector.py [input-file-path] [output-file-directory] [threshold]
