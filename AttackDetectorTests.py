@@ -5,11 +5,31 @@ import os
 
 class AttackDetectorTests(unittest.TestCase):
 	def setUp(self):
-		self.testdata = os.path.join(os.path.dirname(__file__), 'testData.txt')
+		self.inputData = os.path.join(os.path.dirname(__file__), 'testData.txt')
+		self.outputPath = os.path.join(os.path.dirname(__file__),'testSuspicious.txt')
 
 	def test_loadInput(self):
 		obj = AttackDetector()
-		self.assertEqual(obj.loadInput(self.testdata),5)
+		self.assertEqual(len(obj.loadInput(self.inputData)),803)
+
+	def test_fraudDetection(self):
+		obj = AttackDetector()
+		recordList = obj.loadInput(self.inputData)
+		self.assertEqual(obj.fraudDetection(recordList,87),set(["211.188.214.36","118.133.241.175","238.164.11.148","73.173.0.163","240.163.130.99"]))
+	
+	def test_writeOutput(self):
+		obj = AttackDetector()
+		recordList = obj.loadInput(self.inputData)
+		outputData = "/dosDetector/testSuspicious.txt"
+		setOfSuspiciousIPs=obj.fraudDetection(recordList,87)
+		result = set()
+		obj.writeOutput(setOfSuspiciousIPs,outputData)
+		contents = open(self.outputPath)
+		for line in contents:
+			result.add(line[:-1])
+		self.assertEqual(result,setOfSuspiciousIPs)
+		contents.close()
+			 				
 
 	def test_calculateTimeDifference(self):
 		obj = AttackDetector()
